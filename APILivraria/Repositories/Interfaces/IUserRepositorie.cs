@@ -16,5 +16,6 @@ namespace APILivraria.Repositories.Interfaces
 
         void DeleteUser(int id);
         string DeleteOtherUsers(int id);
+        User? GetUserById(int userId);
     }
 }

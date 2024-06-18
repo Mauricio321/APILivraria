@@ -29,6 +29,11 @@ public class UserRepositorie : IUserRepositorie
         return context.Users.Include(r => r.Role).FirstOrDefault(u => u.Email == email && u.Password == password);
     }
 
+    public User? GetUserById(int userId)
+    {
+        return context.Users.FirstOrDefault(u => u.Id == userId);
+    }
+
     public bool EmailExistente(string email)
     {
         return context.Users.Any(u => u.Email == email);
