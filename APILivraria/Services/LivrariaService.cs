@@ -15,28 +15,38 @@ namespace APILivraria.Services
         {
             this.livrariaRepositorie = livrariaRepositorie;
         }
+
         public Task<string> AdicionarLivro(Livro livraria, CancellationToken cancellationToken)
         {
             return livrariaRepositorie.AdicionarLivro(livraria, cancellationToken);
         }
-        public Task ApagarLivro(string nome)
+
+        public async Task<string> ApagarLivro(int id)
         {
-           
+            var livro = await livrariaRepositorie.FiltrarLivroById(id);
+
+            if (livro == null)
+            {
+                return "livro nao encontrado";
+            }
+
+            livrariaRepositorie.ApagarLivro(livro);
+            return "livro deletado";
         }
+
+        public ListaDeLivros ObterTodosLivros(int paginaAtual, int quantidadeItensPagina, decimal? precoEntreMin, decimal? precoEntreMax, List<int>? generoIds, OrdenacaoPreco? ordenacaoPreco)
+        {
+            return livrariaRepositorie.ObterTodosLivros(paginaAtual, quantidadeItensPagina, precoEntreMin, precoEntreMax, generoIds, ordenacaoPreco);
+        }
+
+
 
         public Task<string> AddCarrinhoItem(CarrinhoDto carrinho, int userId, int livroId)
         {
             throw new NotImplementedException();
         }
 
-
-
         public Task<string> DeleteLivroCarrinho(int livroQuantidade, int userId, int livroId, bool apagarTodos)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<LivrariaDTO> FiltrarPorNome(string nome)
         {
             throw new NotImplementedException();
         }
@@ -51,15 +61,10 @@ namespace APILivraria.Services
             throw new NotImplementedException();
         }
 
-        public ListaDeLivros ObterTodosLivros(int paginas, int quantidadeItensPagina, decimal? precoMinimo, decimal? precoMaximo, List<int>? genero, OrdenacaoPreco? ordenacaoPreco)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<CarrinhoItemDtoPreco> ReturnLivrosCarrinhosByUserId(int userId)
         {
             throw new NotImplementedException();
         }
     }
+}
 
-     

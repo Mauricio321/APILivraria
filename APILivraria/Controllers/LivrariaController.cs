@@ -1,11 +1,9 @@
 ﻿using APILivraria.DTOs;
 using APILivraria.Models;
 using APILivraria.NovaPasta2;
-using APILivraria.Repositories;
 using APILivraria.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace APILivraria.Controllers;
 
@@ -20,9 +18,8 @@ public class LivrariaController : ControllerBase
     private readonly IGenerosRepositories generosRepositories;
     private readonly ILivrariaService livrariaService;
 
-    public LivrariaController( IGenerosRepositories generosRepositories, ILivrariaService livrariaService)
+    public LivrariaController(IGenerosRepositories generosRepositories, ILivrariaService livrariaService)
     {
-        _livrariaRepositorie = livrariaRepositorie;
         this.generosRepositories = generosRepositories;
         this.livrariaService = livrariaService;
     }
@@ -83,18 +80,10 @@ public class LivrariaController : ControllerBase
         return Ok(livros);
     }
 
-    [HttpGet("por-nome")]
-    public ActionResult<IEnumerable<Livro>> FiltrarPorNome(string nome)
-    {
-        var livrosFiltrados = _livrariaRepositorie.FiltrarPorNome(nome);
-        return Ok(livrosFiltrados);
-    }
-
     [HttpDelete("Deletar-Livro")]
     [Authorize(Roles = "manager")]
-    public IActionResult DeleteLivro(string nome)
+    public Task<string> DeleteLivro(int id)
     {
-        _livrariaRepositorie.ApagarLivro(nome);
-        return Ok($"{nome} deletado");
+        return livrariaService.ApagarLivro(id);
     }
 }

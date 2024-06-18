@@ -1,14 +1,8 @@
-﻿using APILivraria.Controllers;
-using APILivraria.Data;
+﻿using APILivraria.Data;
 using APILivraria.DTOs;
-using APILivraria.Migrations;
 using APILivraria.Models;
 using APILivraria.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System.Text;
 
 namespace APILivraria.Repositories;
 
@@ -23,50 +17,61 @@ public class LivrariaRepositorie : ILivrariaRepositorie
 
     public async Task<string> AdicionarLivro(Livro livraria, CancellationToken cancellationToken)
     {
-        await context.Livro.AddAsync(livraria, cancellationToken);
+        await context.Livrarias.AddAsync(livraria, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
         return "Cadastrado";
     }
 
-    public void ApagarLivro(Livro livro)
+    public async void ApagarLivro(Livro livro)
     {
-        context.Livro.Remove(livro);
-
-        context.SaveChanges();
+        context.Livrarias.Remove(livro);
+        await context.SaveChangesAsync();
     }
 
-    public IEnumerable<Livro> GetLivroById(int Id)
+    public async Task<Livro?> FiltrarLivroById(int id)
     {
-        var livrarias = context.Livro.Where(livro => livro.Id == Id);
+        var livrarias = await context.Livrarias.FirstOrDefaultAsync(l => l.Id == id);
 
         return livrarias;
     }
 
-
-
-    public IEnumerable<Livro> ObterTodosLivros(int paginaAtual, int quantidadeItensPagina, decimal? precoEntreMin, decimal? precoEntreMax, List<int>? generoIds, OrdenacaoPreco? ordenacaoPreco)
+    public ListaDeLivros ObterTodosLivros(int paginaAtual, int quantidadeItensPagina, decimal? precoEntreMin, decimal? precoEntreMax, List<int>? generoIds, OrdenacaoPreco? ordenacaoPreco)
     {
-        var livrosFiltrados = context.Livro.Where(l => l.Quantidade != 0);
+        var livrosFiltrados = context.Livrarias.Where(l => l.Quantidade != 0);
 
-
-        return livrosFiltrados;
-
-    }
-
-    public decimal LivroCarrinhoJaAdicionadoAntesReturnPreco(IEnumerable<int> livroId)
-    {
-        foreach (int id in livroId)
+        if (precoEntreMin != null && precoEntreMax != null)
         {
-            var livrojaadicionado = context.CarrinhoItems.Include(l => l.Livro).FirstOrDefault(l => l.LivroId == id);
-
-            if (livrojaadicionado != null)
-            {
-                return livrojaadicionado.PrecoItem;
-            }
+            livrosFiltrados = livrosFiltrados.Where(l => l.Preco >= precoEntreMin && l.Preco <= precoEntreMax);
         }
 
-        return 0;
+        if (generoIds != null)
+        {
+            livrosFiltrados = livrosFiltrados.Where(lvro => lvro.Generos!.All(genero => generoIds.Contains(genero.GeneroId)));
+        }
+
+        if (ordenacaoPreco == OrdenacaoPreco.MenorParaMaior)
+        {
+            livrosFiltrados = livrosFiltrados.OrderBy(livrosFiltrados => livrosFiltrados.Preco);
+        }
+
+        else if (ordenacaoPreco == OrdenacaoPreco.MaiorParaMenor)
+        {
+            livrosFiltrados = livrosFiltrados.OrderByDescending(livrosFiltrados => livrosFiltrados.Preco);
+        }
+
+        var PaginasPassadas = paginaAtual - 1;
+
+        var PaginasSkip = quantidadeItensPagina * PaginasPassadas;
+
+        var Listadelivros = new ListaDeLivros
+        {
+            Livros = livrosFiltrados.Skip(PaginasSkip).Take(quantidadeItensPagina),
+            TotalLivros = livrosFiltrados.Count(),
+        };
+
+        return Listadelivros;
+
     }
 
     public bool LivroCarrinhoJaAdicionadoAntes(int userId, int livroId)
@@ -77,7 +82,7 @@ public class LivrariaRepositorie : ILivrariaRepositorie
     }
 
 
-    public async Task<string> AddCarrinhoItem(CarrinhoDto dto, int userid, int livroid)
+    public async Task AddCarrinhoItem(CarrinhoItem carrinhoItem, int userid, int livroid)
     {
 
         var user = await context.Users.Include(u => u.Carrinho).ThenInclude(c => c!.CarrinhoItens).FirstAsync(u => u.Id == userid);
@@ -90,24 +95,16 @@ public class LivrariaRepositorie : ILivrariaRepositorie
                                             .CarrinhoItens
                                             .FirstOrDefault(ci => ci.LivroId == livroid);
 
-            carrinhoItemExistente!.Quantidade += dto.QuantidadeItens;
+            carrinhoItemExistente!.Quantidade += carrinhoItem.Quantidade;
 
             context.Update(carrinhoItemExistente);
         }
         else
         {
-            var carrinhoitem = new CarrinhoItem
-            {
-                CarrinhoId = carrinhoid,
-                LivroId = dto.LivroId,
-                Quantidade = dto.QuantidadeItens,
-            };
-            context.Update(carrinhoitem);
+            await context.AddAsync(carrinhoItem);
         }
 
         await context.SaveChangesAsync();
-
-        return "livro adicionado";
     }
 
     public async Task<CarrinhoItemDtoPreco> ReturnLivrosCarrinhosByUserId(int Userid)
@@ -205,5 +202,3 @@ public class LivrariaRepositorie : ILivrariaRepositorie
         return "Compra finalizada";
     }
 }
-
-
