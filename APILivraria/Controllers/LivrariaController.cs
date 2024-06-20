@@ -2,8 +2,10 @@
 using APILivraria.Models;
 using APILivraria.NovaPasta2;
 using APILivraria.Repositories.Interfaces;
+using APILivraria.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static APILivraria.Services.LivrariaService;
 
 namespace APILivraria.Controllers;
 
@@ -28,34 +30,31 @@ public class LivrariaController : ControllerBase
     [Authorize(Roles = "manager")]
     public async Task<ActionResult<string>> AdicionarLivro(LivrariaSemId DTO, CancellationToken cancellationToken)
     {
-        var generos = DTO.GeneroId.Count != 0 ? await generosRepositories.ObterGeneros(DTO.GeneroId, cancellationToken) : new Dictionary<int, Generos?>();
+        //var generos = await generosRepositories.ObterGenero(DTO.GeneroIds, cancellationToken);
 
-        var generosNaoEncontrados = generos.Where(kvp => kvp.Value is null);
+        //var generosNaoEncontrados = DTO.GeneroIds.Where(generoId => !generos.Any(genero => genero.Id == generoId));
 
-        if (generosNaoEncontrados.Any())
-        {
-            return NotFound($"Os seguintes generos nao foram encontraqdos: {string.Join(", ", generosNaoEncontrados.Select(kvp => kvp.Key.ToString()))}");
-        }
+        //if (generosNaoEncontrados.Any())
+        //{
+        //    return NotFound($"Os seguintes generos nao foram encontrados: {string.Join(", ", generosNaoEncontrados)}");
+        //}
 
-        var generoNovo = new List<LivroGenero>();
-        foreach (var genero in generos)
-        {
-            generoNovo.Add(new LivroGenero
-            {
-                Genero = genero.Value!
-            });
-        }
+        //var generoNovo = generos.Select(genero =>
+        //    new LivroGenero
+        //    {
+        //        Genero = genero
+        //    });                                                                                                                             //ISSO TUDO PARA A CAMADA SERVICES
 
-        var compraLivros = new Livro
-        {
-            Nome = DTO.Livro,
-            Generos = generoNovo,
-            Autor = DTO.Autor,
-            Preco = DTO.Preco,
-            Quantidade = DTO.Quantidade
-        };
+        //var novoLivro = new Livro
+        //{
+        //    Nome = DTO.Livro,
+        //    Generos = generoNovo.ToList(),
+        //    Autor = DTO.Autor,
+        //    Preco = DTO.Preco,
+        //    Quantidade = DTO.Quantidade
+        //};
 
-        var livroAdicionado = await _livrariaRepositorie.AdicionarLivro(compraLivros, cancellationToken);
+        var livroAdicionado = await _livrariaRepositorie.AdicionarLivro(novoLivro, cancellationToken);
 
         return Ok(livroAdicionado);
     }
@@ -65,19 +64,15 @@ public class LivrariaController : ControllerBase
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public ActionResult<ListaDeLivros> LivrosDisponiveis(int paginas, int quantidadeItensPagina, decimal? precoMinimo, decimal? precoMaximo, [FromQuery] List<int>? genero, OrdenacaoPreco? ordenacaoPreco)
     {
-        if (paginas <= 0)
+        var cartaDeLivros = livrariaService.ObterTodosLivros(paginas, quantidadeItensPagina, precoMinimo, precoMaximo, genero, ordenacaoPreco, paginas);
+
+        if (!cartaDeLivros.DeuCerto)
         {
-            return BadRequest("Se você realmente acha que existe uma página menor ou igual a zero, talvez precise de um novo conceito de matemática. Tente de novo.");
+            if (cartaDeLivros.TipoDeErro == TiposDeErro.BadRequest)
+                return BadRequest(cartaDeLivros.MensagemErro);
         }
 
-        if (quantidadeItensPagina <= 0)
-        {
-            return BadRequest("Interessante escolha de quantidade de itens. Itens começam a partir do número 1, mas parece que você quer ser diferente. Que tal tentar um número positivo desta vez?");
-        }
-
-        var livros = _livrariaRepositorie.ObterTodosLivros(paginas, quantidadeItensPagina, precoMinimo, precoMaximo, genero, ordenacaoPreco);
-
-        return Ok(livros);
+        return Ok(cartaDeLivros);
     }
 
     [HttpDelete("Deletar-Livro")]

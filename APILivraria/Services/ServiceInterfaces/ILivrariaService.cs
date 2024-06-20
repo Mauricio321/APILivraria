@@ -1,17 +1,17 @@
 ﻿using APILivraria.DTOs;
 using APILivraria.Models;
+using static APILivraria.Services.LivrariaService;
 
-namespace APILivraria.Repositories.Interfaces
+namespace APILivraria.Services.ServiceInterfaces
 {
     public interface ILivrariaService
     {
         Task<string> AdicionarLivro(Livro livraria, CancellationToken cancellationToken);
-        ListaDeLivros ObterTodosLivros(int paginas, int quantidadeItensPagina, decimal? precoMinimo, decimal? precoMaximo, List<int>? genero, OrdenacaoPreco? ordenacaoPreco);
+        Envelope<ListaDeLivros> ObterTodosLivros(int paginaAtual, int quantidadeItensPagina, decimal? precoEntreMin, decimal? precoEntreMax, List<int>? generoIds, OrdenacaoPreco? ordenacaoPreco, int pagina)
         Task<string> ApagarLivro(int id);
         Task<string> AddCarrinhoItem(CarrinhoDto carrinho, int userId, int livroId);
         Task<CarrinhoItemDtoPreco> ReturnLivrosCarrinhosByUserId(int userId);
-        decimal LivroCarrinhoJaAdicionadoAntesReturnPreco(IEnumerable<int> livroId);
-        Task<string> DeleteLivroCarrinho(int livroQuantidade, int userId, int livroId, bool apagarTodos);
+        Task<string> DeleteLivroCarrinho(int livroQuantidade, int userId, int livroId);
         Task<string> FinalizarCompraCarrinho(int userId, bool apagarTodos);
     }
 }

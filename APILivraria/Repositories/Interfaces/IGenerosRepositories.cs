@@ -6,7 +6,6 @@ namespace APILivraria.Repositories.Interfaces
     {
         Task<String> AdicionarGenero(Generos generos);
         Task<List<Generos>> ObterGenero(List<int> id, CancellationToken cancellationToken);
-        Task<Dictionary<int, Generos?>> ObterGeneros(List<int> idFilters, CancellationToken cancellationToken);
         IEnumerable<Generos> GenerosDisponiveis();
         void ApagarGenero(int id);
     }

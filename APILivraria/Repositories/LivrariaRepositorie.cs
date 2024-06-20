@@ -82,123 +82,43 @@ public class LivrariaRepositorie : ILivrariaRepositorie
     }
 
 
-    public async Task AddCarrinhoItem(CarrinhoItem carrinhoItem, int userid, int livroid)
+    public async Task CarrinhoItemUpdate(CarrinhoItem carrinhoItem)
     {
-
-        var user = await context.Users.Include(u => u.Carrinho).ThenInclude(c => c!.CarrinhoItens).FirstAsync(u => u.Id == userid);
-        var carrinhoid = user.Carrinho!.CarrinhoId;
-        var livroJaAdicionadoNoCarrinho = LivroCarrinhoJaAdicionadoAntes(userid, livroid);
-
-        if (livroJaAdicionadoNoCarrinho)
-        {
-            var carrinhoItemExistente = user.Carrinho
-                                            .CarrinhoItens
-                                            .FirstOrDefault(ci => ci.LivroId == livroid);
-
-            carrinhoItemExistente!.Quantidade += carrinhoItem.Quantidade;
-
-            context.Update(carrinhoItemExistente);
-        }
-        else
-        {
-            await context.AddAsync(carrinhoItem);
-        }
+        context.Update(carrinhoItem);
 
         await context.SaveChangesAsync();
     }
 
-    public async Task<CarrinhoItemDtoPreco> ReturnLivrosCarrinhosByUserId(int Userid)
+    public async Task AddCarrinhoItem(CarrinhoItem carrinhoItem)
     {
-        var user = await context.Users
-                               .Include(u => u.Carrinho)
-                               .ThenInclude(c => c!.CarrinhoItens)
-                               .ThenInclude(c => c.Livro)
-                               .FirstAsync(u => u.Id == Userid);
-
-        var carrinho = user.Carrinho;
-        var listaItems = carrinho!.CarrinhoItens.ToList();
-
-        var carrinhoItems = new List<CarrinhoItemDto>();
-
-        var itemPreco = decimal.Zero;
-        foreach (var item in listaItems)
-        {
-            var livros = item.Livro;
-            var quantidade = item.Quantidade;
-
-            var carrinhoitem = new CarrinhoItemDto
-            {
-                Livro = livros!.Nome,
-                Quantidade = quantidade,
-                Preco = livros.Preco,
-            };
-
-            itemPreco += livros.Preco * quantidade;
-            carrinhoItems.Add(carrinhoitem);
-        }
-        var carrinhoitemPreco = new CarrinhoItemDtoPreco
-        {
-            CarrinhoItemsDto = carrinhoItems,
-            PrecoTotal = itemPreco,
-            QuantidadeTotal = carrinho.QuantidadeItens
-        };
-
-        return carrinhoitemPreco;
-    }
-
-    public async Task<string> DeleteLivroCarrinho(int livroQuantidade, int userId, int livroId, bool apagarTodos)
-    {
-        var user = await context.Users
-                                .Include(u => u.Carrinho)
-                                .ThenInclude(c => c!.CarrinhoItens)
-                                .ThenInclude(ci => ci.Livro)
-                                .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null || user.Carrinho == null)
-        {
-            return "Usuário ou carrinho não encontrado.";
-        }
-
-        var carrinho = user.Carrinho;
-        var itemToRemove = carrinho.CarrinhoItens
-                                   .FirstOrDefault(ci => ci.LivroId == livroId);
-
-        if (apagarTodos)
-        {
-            context.CarrinhoItems.RemoveRange(carrinho.CarrinhoItens);
-
-            carrinho.CarrinhoItens.Clear();
-        }
-
-        else if (itemToRemove?.Quantidade > livroQuantidade)
-        {
-            itemToRemove.Quantidade -= livroQuantidade;
-            context.CarrinhoItems.Update(itemToRemove);
-        }
+        await context.AddAsync(carrinhoItem);
 
         await context.SaveChangesAsync();
-
-        return "Livro removido da lista";
     }
 
-    public async Task<string> FinalizarCompraCarrinho(int userId, bool finalizarCompra)
+    public async Task<User?> FinalizarCompraCarrinho(int userId)
     {
-        var user = await context.Users
-                                .Include(u => u.Carrinho)
-                                .ThenInclude(c => c!.CarrinhoItens)
-                                .ThenInclude(ci => ci.Livro)
-                                .FirstAsync(u => u.Id == userId);
+        return await context.Users
+                            .Include(u => u.Carrinho)
+                            .ThenInclude(c => c!.CarrinhoItens)
+                            .ThenInclude(ci => ci.Livro)
+                            .FirstAsync(u => u.Id == userId);
+    }
 
-        var carrinho = user.Carrinho;
+    public void RemoveCarrinhoItens(IEnumerable<CarrinhoItem> carrinhoItens)
+    {
+        context.CarrinhoItems.RemoveRange(carrinhoItens);
 
-        if (finalizarCompra)
-        {
-            context.CarrinhoItems.RemoveRange(carrinho!.CarrinhoItens);
+        context.SaveChanges();
+    }
 
-            carrinho.CarrinhoItens.Clear();
-        }
-        await context.SaveChangesAsync();
+    public void UpdateCarrinhoItem(CarrinhoItem item)
+    {
+        context.CarrinhoItems.Update(item);
+    }
 
-        return "Compra finalizada";
+    public void SaveChangesAsync()
+    {
+       context.SaveChangesAsync();
     }
 }

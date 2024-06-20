@@ -47,12 +47,5 @@ namespace APILivraria.Repositories
 
            return genero;
         }
-
-        public async Task<Dictionary<int, Generos?>> ObterGeneros(List<int> idFilters, CancellationToken cancellationToken)
-        {
-            var generos = await context.Generossss.Where(g => idFilters.Contains(g.Id)).ToListAsync(cancellationToken);
-
-            return idFilters.ToDictionary(f => f, f => generos.FirstOrDefault(g => g.Id == f));
-        }
     }
 } 

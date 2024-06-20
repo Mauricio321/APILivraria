@@ -10,10 +10,13 @@ public interface ILivrariaRepositorie
     ListaDeLivros ObterTodosLivros(int paginas, int quantidadeItensPagina, decimal? precoMinimo, decimal? precoMaximo, List<int>? genero, OrdenacaoPreco? ordenacaoPreco);
     Task<Livro?> FiltrarLivroById(int id);
     void ApagarLivro(Livro livro);
-    Task<string> AddCarrinhoItem(CarrinhoDto carrinho, int userid, int livroid);
-    Task<CarrinhoItemDtoPreco> ReturnLivrosCarrinhosByUserId(int Userid);
-    Task<string> DeleteLivroCarrinho(int livroQuantidade, int userId, int livroId, bool apagarTodos);
-    Task<string> FinalizarCompraCarrinho(int userId, bool apagarTodos);
+    Task CarrinhoItemUpdate(CarrinhoItem carrinhoItem);
+    Task AddCarrinhoItem(CarrinhoItem carrinhoItem);
+    Task<User> FinalizarCompraCarrinho(int userId);
+    bool LivroCarrinhoJaAdicionadoAntes(int userId, int livroId);
+    void RemoveCarrinhoItens(IEnumerable<CarrinhoItem> carrinhoItens);
+    void UpdateCarrinhoItem(CarrinhoItem item);
+    void SaveChangesAsync();
 }
 
 

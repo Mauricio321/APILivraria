@@ -1,8 +1,8 @@
 ﻿using APILivraria.Models;
 
-namespace APILivraria.Repositories.Interfaces
+namespace APILivraria.Services.ServiceInterfaces
 {
-    public interface IUserRepositorie
+    public interface IUserService
     {
         void AddUser(User user);
 
