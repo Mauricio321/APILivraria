@@ -9,7 +9,7 @@ namespace APILivraria.Services;
 
 public class TokenServices
 {
-    public static object GenerateToken(User user)
+    public static string GenerateToken(User user)
     {
         var key = Encoding.ASCII.GetBytes(Key.Secret);
         var tokenConfig = new SecurityTokenDescriptor
@@ -26,9 +26,6 @@ public class TokenServices
         var token = tokenHandler.CreateToken(tokenConfig);
         var tokenString = tokenHandler.WriteToken(token);
 
-        return new
-        {
-            token = tokenString
-        };
+       return tokenString;
     }
 }

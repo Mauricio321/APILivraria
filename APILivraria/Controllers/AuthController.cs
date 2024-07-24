@@ -1,8 +1,8 @@
-﻿using APILivraria.Repositories.Interfaces;
-using APILivraria.Services;
+﻿using APILivraria.Models;
+using APILivraria.Repositories.Interfaces;
+using APILivraria.Services.ServiceInterfaces;
 using APILivraria.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 
 
 namespace APILivraria.Controllers;
@@ -12,23 +12,28 @@ namespace APILivraria.Controllers;
 public class AuthController : Controller
 {
     private readonly IUserRepositorie userRepositorie;
+    private readonly IUserService userService;
 
-    public AuthController(IUserRepositorie userRepositorie)
+    public AuthController(IUserRepositorie userRepositorie, IUserService userService)
     {
         this.userRepositorie = userRepositorie;
+        this.userService = userService;
     }
 
     [HttpPost]
     public IActionResult AuthUser([FromBody] UserViewModel userView)
     {
-        var user = userRepositorie.GetUser(userView.Email, userView.Password);
-
-        if (user != null)
+        var token = userService.AuthUser(userView.Email, userView.Password);
+        
+        if(!token.DeuCerto && token.TipoDeErro == TiposDeErro.BadRequest)
         {
-            var token = TokenServices.GenerateToken(user);
-            return Ok(token);
+            return BadRequest(token.MensagemErro);
         }
-       
-        return BadRequest("Username or password is invalid");
+
+        //TiposDeErro tiposDeErro = default;
+
+
+
+        return Ok(token.Conteudo);
     }
 }

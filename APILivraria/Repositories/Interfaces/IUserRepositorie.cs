@@ -8,14 +8,15 @@ namespace APILivraria.Repositories.Interfaces
 
         List<User> Get();
 
-        User? GetUser(string email, string password);
+        User? GetUser(string email);
 
         bool EmailExistente(string email);
 
         bool IdExistente(int id);
 
         void DeleteUser(int id);
-        string DeleteOtherUsers(int id);
+        string DeleteOtherUser(int id);
+        Task<User?> GetCarrinhoByUserId(int userId);
         Task<User?> GetUserById(int userId);
     }
 }

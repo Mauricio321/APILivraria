@@ -7,32 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Integração\**" />
-    <Compile Remove="NovaPasta1\**" />
-    <Compile Remove="NovaPasta2\**" />
-    <Compile Remove="NovaPasta\**" />
-    <Content Remove="Integração\**" />
-    <Content Remove="NovaPasta1\**" />
-    <Content Remove="NovaPasta2\**" />
-    <Content Remove="NovaPasta\**" />
-    <EmbeddedResource Remove="Integração\**" />
-    <EmbeddedResource Remove="NovaPasta1\**" />
-    <EmbeddedResource Remove="NovaPasta2\**" />
-    <EmbeddedResource Remove="NovaPasta\**" />
-    <None Remove="Integração\**" />
-    <None Remove="NovaPasta1\**" />
-    <None Remove="NovaPasta2\**" />
-    <None Remove="NovaPasta\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Controllers\RolesController.cs" />
-    <Compile Remove="Models\LivrariaService.cs" />
-    <Compile Remove="Models\PasswordUtils.cs" />
-    <Compile Remove="çm.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5">

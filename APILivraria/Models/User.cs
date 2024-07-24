@@ -8,6 +8,7 @@ public class User : Entity
     public required string Email { get; set; }
     public required string Password { get; set; }
     public int RoleId { get; set; }
+    public byte[] Salt { get; set; } = Array.Empty<byte>();
     public Role Role { get; set; } = default!;
     public Carrinho Carrinho { get; set; } = default!;
     public ICollection<EnderecoUsuario> Enderecos { get; set; } = Array.Empty<EnderecoUsuario>();

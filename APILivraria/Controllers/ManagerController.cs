@@ -1,5 +1,7 @@
 ﻿using APILivraria.Models;
 using APILivraria.Repositories.Interfaces;
+using APILivraria.Services;
+using APILivraria.Services.ServiceInterfaces;
 using APILivraria.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,85 +16,48 @@ namespace APILivraria.Controllers;
 public class ManagerController : ControllerBase
 {
     private readonly IUserRepositorie userRepositorie;
+    private readonly IUserService userService;
 
-    public ManagerController(IUserRepositorie managerRepositorie)
+    public ManagerController(IUserRepositorie managerRepositorie, IUserService userService)
     {
         this.userRepositorie = managerRepositorie;
+        this.userService = userService;
     }
 
     [HttpPost]
     public IActionResult AddManager(ManagerViewModel managerView)
     {
-        const int RoleIdManager = 1;
+        var envelopUser = userService.AddManager(managerView);
 
-        var manager = new User()
+        if (!envelopUser.DeuCerto)
         {
-            Email = managerView.Email,
-            Password = managerView.Password,
-            RoleId = RoleIdManager
-        };
+            if (envelopUser.TipoDeErro == TiposDeErro.BadRequest)
+            {
+                return BadRequest(envelopUser.MensagemErro);
+            }
 
-        string Passwordpattern = @"[@#%&$]";
-        var containsSpecialChar = Regex.IsMatch(managerView.Password, Passwordpattern);
-
-        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        var containsemailPattern = Regex.IsMatch(managerView.Email, emailPattern);
-
-        var emailExistente = userRepositorie.EmailExistente(managerView.Email);
-
-        if (emailExistente)
-        {
-            return StatusCode(403, "Esse email ja foi cadastrado");
-        }
-       
-        if (!containsemailPattern)
-        {
-            return BadRequest("email invalido, tente novamente");
+            if (envelopUser.TipoDeErro == TiposDeErro.Forbidden)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, envelopUser.MensagemErro);
+            }
         }
 
-        if (managerView.Password.Length < 8)
-        {
-            return BadRequest("A senha deve ter pelo menos 8 caracteres");
-        }
-       
-        if (!containsSpecialChar)
-        {
-            return BadRequest("A senha deve conter caracteres especiais");
-        }
-
-        userRepositorie.AddUser(manager);
-        return Ok();
+        return Ok(envelopUser.Conteudo);
     }
 
     [HttpDelete("Delete-Me")]
-    public IActionResult Delete()
+    public void Delete()
     {
         var identity = HttpContext.User.Identity as ClaimsIdentity;
+
         var id = int.Parse(identity!.FindFirst("userId")!.Value);
 
-        var idExistente = userRepositorie.IdExistente(id);
-
-        if (idExistente)
-        {
-            return BadRequest("Usuario não encontrado");
-        }
-
-        userRepositorie.DeleteUser(id);
-
-        return Ok("Usuario deletada com sucesso");
+        userService.DeleteUser(id);
     }
 
     [HttpDelete("Delete-Users")]
-    public IActionResult DeleteUsers(int Id)
+    public void DeleteUsers(int Id)
     {
-
-        var usuarioExistente = userRepositorie.IdExistente(Id);
-        if (!usuarioExistente)
-        {
-            return NotFound("usuario não encontrado");
-        }
-
-        userRepositorie.DeleteOtherUsers(Id);
-        return Ok("usuario deletado");
+        userService.DeleteOtherUser(Id);
     }
 }

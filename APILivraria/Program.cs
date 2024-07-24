@@ -6,6 +6,8 @@ using APILivraria.Models;
 using APILivraria.PrivateKey;
 using APILivraria.Repositories;
 using APILivraria.Repositories.Interfaces;
+using APILivraria.Services;
+using APILivraria.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -44,6 +46,11 @@ builder.Services.AddSwaggerGen(options =>
     } }
     );
 });
+
+
+builder.Services.AddScoped<IGeneroService, GeneroService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ILivrariaService, LivrariaService>();
 builder.Services.AddScoped<ILivrariaRepositorie, LivrariaRepositorie>();
 builder.Services.AddScoped<IGenerosRepositories, GenerosRepositories>();
 builder.Services.AddScoped<IViaCepRepository, ViaCepIntegracao>();

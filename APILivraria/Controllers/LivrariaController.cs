@@ -1,6 +1,5 @@
 ﻿using APILivraria.DTOs;
 using APILivraria.Models;
-using APILivraria.NovaPasta2;
 using APILivraria.Repositories.Interfaces;
 using APILivraria.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -30,31 +29,7 @@ public class LivrariaController : ControllerBase
     [Authorize(Roles = "manager")]
     public async Task<ActionResult<string>> AdicionarLivro(LivrariaSemId DTO, CancellationToken cancellationToken)
     {
-        //var generos = await generosRepositories.ObterGenero(DTO.GeneroIds, cancellationToken);
-
-        //var generosNaoEncontrados = DTO.GeneroIds.Where(generoId => !generos.Any(genero => genero.Id == generoId));
-
-        //if (generosNaoEncontrados.Any())
-        //{
-        //    return NotFound($"Os seguintes generos nao foram encontrados: {string.Join(", ", generosNaoEncontrados)}");
-        //}
-
-        //var generoNovo = generos.Select(genero =>
-        //    new LivroGenero
-        //    {
-        //        Genero = genero
-        //    });                                                                                                                             //ISSO TUDO PARA A CAMADA SERVICES
-
-        //var novoLivro = new Livro
-        //{
-        //    Nome = DTO.Livro,
-        //    Generos = generoNovo.ToList(),
-        //    Autor = DTO.Autor,
-        //    Preco = DTO.Preco,
-        //    Quantidade = DTO.Quantidade
-        //};
-
-        var livroAdicionado = await _livrariaRepositorie.AdicionarLivro(novoLivro, cancellationToken);
+        var livroAdicionado = await livrariaService.AdicionarLivro(DTO, cancellationToken);
 
         return Ok(livroAdicionado);
     }

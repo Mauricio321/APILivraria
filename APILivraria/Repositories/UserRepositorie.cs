@@ -24,15 +24,21 @@ public class UserRepositorie : IUserRepositorie
         return context.Users.ToList();
     }
 
-    public User? GetUser(string email, string password)
+    public User? GetUser(string email)
     {
-        return context.Users.Include(r => r.Role).FirstOrDefault(u => u.Email == email && u.Password == password);
+        return context.Users.Include(r => r.Role).FirstOrDefault(u => u.Email == email);
+    }
+
+    public Task<User?> GetCarrinhoByUserId(int userId)
+    {
+        return context.Users.Include(c => c.Carrinho).ThenInclude(c => c.CarrinhoItens).FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     public Task<User?> GetUserById(int userId)
     {
         return context.Users.FirstOrDefaultAsync(u => u.Id == userId);
     }
+
 
     public bool EmailExistente(string email)
     {
@@ -52,7 +58,7 @@ public class UserRepositorie : IUserRepositorie
         context.SaveChanges();
     }
 
-    public string DeleteOtherUsers(int id)
+    public string DeleteOtherUser(int id)
     {
         var apagaroutrosusuarios = context.Users.FirstOrDefault(u => u.Id == id);
 

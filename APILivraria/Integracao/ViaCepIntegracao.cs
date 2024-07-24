@@ -1,8 +1,6 @@
 ﻿using APILivraria.Integracao.Interfaces;
 using APILivraria.Integracao.Refit;
 using APILivraria.Integracao.Response;
-using APILivraria.Repositories;
-using System.Security.Claims;
 
 namespace APILivraria.Integracao
 {
@@ -13,7 +11,7 @@ namespace APILivraria.Integracao
         {
             this.context = context;
         }
-       
+
         public async Task<CadastroEnderecoCompra?> ObterDadosViaCep(string cep, CadastroEnderecoDto enderecoDto, int id)
         {
             var responseData = await context.ObterDadosViaCep(cep);

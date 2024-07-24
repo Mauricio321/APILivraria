@@ -1,5 +1,6 @@
 ﻿using APILivraria.Models;
 using APILivraria.Repositories.Interfaces;
+using APILivraria.Services.ServiceInterfaces;
 using APILivraria.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,57 +13,34 @@ namespace APILivraria.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    const int RoleIdUser = 2;
-
     private readonly IUserRepositorie userRepositorie;
+    private readonly IUserService userService;
 
-    public UserController(IUserRepositorie userRepositorie)
+    public UserController(IUserRepositorie userRepositorie, IUserService userService)
     {
         this.userRepositorie = userRepositorie;
+        this.userService = userService;
     }
 
     [HttpPost]
     public IActionResult Add(UserViewModel userView)
     {
-        var user = new User
+        var envelopUser = userService.AddUser(userView);
+
+        if (!envelopUser.DeuCerto)
         {
-            Email = userView.Email,
-            Password = userView.Password,
-            RoleId = RoleIdUser,
-            Carrinho = new Carrinho { }
-        };
+            if (envelopUser.TipoDeErro == TiposDeErro.BadRequest)
+            {
+                return BadRequest(envelopUser.MensagemErro);
+            }
 
-        string Passwordpattern = @"[@#%&$]";
-        var containsSpecialChar = Regex.IsMatch(userView.Password, Passwordpattern);
-
-        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        var containsemailPattern = Regex.IsMatch(userView.Email, emailPattern);
-
-        var emailExistente = userRepositorie.EmailExistente(userView.Email);
-
-        if (emailExistente)
-        {
-            return StatusCode(403, "Esse email ja foi cadastrado");
+            if(envelopUser.TipoDeErro == TiposDeErro.Forbidden)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, envelopUser.MensagemErro);
+            }
         }
 
-        if (!containsemailPattern)
-        {
-            return BadRequest("email invalido, tente novamente");
-        }
-
-        if (userView.Password.Length < 8)
-        {
-            return BadRequest("A senha deve ter pelo menos 8 caracteres");
-        }
-       
-        if (!containsSpecialChar)
-        {
-            return BadRequest("A senha deve conter caracteres especiais");
-        }
-
-        userRepositorie.AddUser(user);
-
-        return Ok();
+        return Ok(envelopUser.Conteudo);
     }
 
     [Authorize(Roles = "manager")]
@@ -76,21 +54,12 @@ public class UserController : ControllerBase
 
     [Authorize(Roles = "manager")]
     [HttpDelete]
-    public IActionResult DeleteUser()
+    public void DeleteUser()
     {
         var identity = HttpContext.User.Identity as ClaimsIdentity;
 
         var id = int.Parse(identity!.FindFirst("userId")!.Value);
 
-        var idExistente = userRepositorie.IdExistente(id);
-
-        if (idExistente)
-        {
-            return BadRequest("Usuario não encontrado");
-        }
-
-        userRepositorie.DeleteUser(id);
-
-        return Ok("Usuario deletada com sucesso");
+        userService.DeleteUser(id);
     }
 }

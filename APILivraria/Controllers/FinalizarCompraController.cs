@@ -2,6 +2,7 @@
 using APILivraria.Integracao.Interfaces;
 using APILivraria.Integracao.Response;
 using APILivraria.Repositories.Interfaces;
+using APILivraria.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +16,11 @@ namespace APILivraria.Controllers
     public class FinalizarCompraController : ControllerBase
     {
         private readonly ILivrariaRepositorie livrariaRepositorie;
-        public FinalizarCompraController(ILivrariaRepositorie livrariaRepositorie)
+        private readonly ILivrariaService livrariaService;
+        public FinalizarCompraController(ILivrariaRepositorie livrariaRepositorie, ILivrariaService livrariaService)
         {
             this.livrariaRepositorie = livrariaRepositorie;
+            this.livrariaService = livrariaService;
         }
 
         [Authorize]
@@ -25,16 +28,12 @@ namespace APILivraria.Controllers
         public async Task<DeleLivrosCarrinhoDto> FinalizarCompraCarrinho(bool finalizarCompra)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-
             var id = int.Parse(identity!.FindFirst("userId")!.Value);
-
-            await livrariaRepositorie.FinalizarCompraCarrinho(id, finalizarCompra);
-         
-            var msg = $"Compra finalizada com sucesso, seu livro chegará em em alguns dias";
+            await livrariaService.FinalizarCompraCarrinho(id, finalizarCompra);
             
             var result = new DeleLivrosCarrinhoDto
             {
-                Mensagem = msg,
+                Mensagem = "Compra finalizada com sucesso, seu livro chegará em em alguns dias"
             };
 
             return result;

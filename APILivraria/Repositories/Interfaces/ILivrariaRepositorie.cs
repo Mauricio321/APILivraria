@@ -5,7 +5,7 @@ namespace APILivraria.Repositories.Interfaces;
 
 public interface ILivrariaRepositorie
 {
-    Task<string> AdicionarLivro(Livro livraria, CancellationToken cancellationToken);
+    Task<LivroAdicionado> AdicionarLivro(Livro livraria, CancellationToken cancellationToken);
 
     ListaDeLivros ObterTodosLivros(int paginas, int quantidadeItensPagina, decimal? precoMinimo, decimal? precoMaximo, List<int>? genero, OrdenacaoPreco? ordenacaoPreco);
     Task<Livro?> FiltrarLivroById(int id);

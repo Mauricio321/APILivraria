@@ -1,6 +1,4 @@
-﻿using APILivraria.DTOs;
-
-namespace APILivraria.NovaPasta2
+﻿namespace APILivraria.DTOs
 {
     public class LivrariaSemId
     {

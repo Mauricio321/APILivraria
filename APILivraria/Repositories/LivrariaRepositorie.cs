@@ -15,18 +15,25 @@ public class LivrariaRepositorie : ILivrariaRepositorie
         this.context = context;
     }
 
-    public async Task<string> AdicionarLivro(Livro livraria, CancellationToken cancellationToken)
+    public async Task<LivroAdicionado> AdicionarLivro(Livro livraria, CancellationToken cancellationToken)
     {
         await context.Livrarias.AddAsync(livraria, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        return "Cadastrado";
+        return new LivroAdicionado
+        {
+            Mensagem = "livro cadastrado"
+        };
     }
 
-    public async void ApagarLivro(Livro livro)
+    public void ApagarLivro(Livro livro)
     {
         context.Livrarias.Remove(livro);
-        await context.SaveChangesAsync();
+    }
+
+    public void SaveChangesAsync()
+    {
+        context.SaveChangesAsync();
     }
 
     public async Task<Livro?> FiltrarLivroById(int id)
@@ -96,7 +103,7 @@ public class LivrariaRepositorie : ILivrariaRepositorie
         await context.SaveChangesAsync();
     }
 
-    public async Task<User?> FinalizarCompraCarrinho(int userId)
+    public async Task<User> FinalizarCompraCarrinho(int userId)
     {
         return await context.Users
                             .Include(u => u.Carrinho)
@@ -115,10 +122,5 @@ public class LivrariaRepositorie : ILivrariaRepositorie
     public void UpdateCarrinhoItem(CarrinhoItem item)
     {
         context.CarrinhoItems.Update(item);
-    }
-
-    public void SaveChangesAsync()
-    {
-       context.SaveChangesAsync();
     }
 }
